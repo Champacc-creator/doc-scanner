@@ -1,4 +1,4 @@
-const API_URL = 'https://script.google.com/macros/s/XXXXX/exec'; // ← ลิงก์จากขั้นที่ 2
+const API_URL = 'https://script.google.com/macros/s/1z1xAFs0flOi4-WmHkvaI1wuhWcsguNU51i3qyGGnAkk/exec'; // ← ลิงก์จากขั้นที่ 2
 const API_KEY = 'MY_SECRET_KEY_2569';
 
 async function callAPI(action, payload = {}) {
