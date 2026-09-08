@@ -14,9 +14,9 @@ async function callAPI(action, payload = {}) {
 // แล้วค่อยต่อด้วยฟังก์ชัน saveData เดิมของคุณ
 async function saveData() {
 
-    const docCode = document.getElementById('Database').value;
+    const docCode = document.getElementById('docCode').value;
 
-    const receivedBy = document.getElementById('Record').value;
+    const receivedBy = document.getElementById('receivedBy').value;
 
     const btn = document.getElementById('saveBtn'); // ดึงตัวปุ่มมา
 
