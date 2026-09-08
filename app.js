@@ -39,31 +39,17 @@ async function saveData() {
 
     
 
-    // 1. ตรวจสอบว่ารหัสนี้มีอยู่แล้วไหม?
+  if (p.action === 'receive') {
+    // 1. ใช้ TextFinder ค้นหาแทนการดึงข้อมูลทั้งชีต (เร็วขึ้นมาก)
+    const textFinder = recordSheet.getRange("B:B").createTextFinder(p.docCode).matchEntireCell(true);
+    const result = textFinder.findNext();
 
-    const check = await callAPI('verify', { docCode });
-
-    if (check.found) {
-
-        alert("คำเตือน: รหัสเอกสารนี้มีในระบบแล้ว!");
-
-        return;
-
+    // 2. ถ้าเจอ (result ไม่ใช่ null) แสดงว่าซ้ำ
+    if (result !== null) {
+      return ContentService.createTextOutput(JSON.stringify({ok: false, msg: 'รหัสนี้ถูกบันทึกไปแล้ว!'})).setMimeType(ContentService.MimeType.JSON);
     }
-
-
-    // 2. ถ้าไม่ซ้ำ ก็ทำการบันทึก
-
-    const res = await callAPI('receive', { docCode, receivedBy });
-
-    if (res.ok) {
-
-        alert("บันทึกสำเร็จ!");
-
-    } else {
-
-        alert("ข้อผิดพลาด: " + res.msg);
-
-    }
-
-}
+    
+    // 3. ถ้าไม่ซ้ำ ให้บันทึก
+    recordSheet.appendRow([new Date(), p.docCode, p.receivedBy]);
+    return ContentService.createTextOutput(JSON.stringify({ok: true, msg: 'บันทึกสำเร็จ'})).setMimeType(ContentService.MimeType.JSON);
+  }
