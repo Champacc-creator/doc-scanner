@@ -2,13 +2,11 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbyR9Mv0WCXysPKgIIzB_STi
 const API_KEY = 'MY_SECRET_KEY_2569';
 
 async function callAPI(action, payload = {}) {
-
-  // เปลี่ยนเป็นส่งแบบ Query String (GET) แทน POST
-
-  const params = new URLSearchParams({ action, key: API_KEY, ...payload });
-
-  const res = await fetch(`${API_URL}?${params.toString()}`);
-
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    // ต้องใช้ text/plain เพื่อเลี่ยง CORS preflight ของ Apps Script
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action, key: API_KEY, ...payload })
+  });
   return res.json();
-
 }
