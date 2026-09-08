@@ -12,8 +12,7 @@
     <div class="muted">ระบบจำชื่อไว้ให้อัตโนมัติ</div>
   </div>
 
-  <div class="card">
-    <div id="reader"></div>
+  <div class="card">  
     <input id="manual" placeholder="หรือพิมพ์รหัสเอกสารเอง">
     <button onclick="submitCode(manual.value)">บันทึกด้วยรหัสที่พิมพ์</button>
   </div>
@@ -74,12 +73,7 @@ function beep() {
   o.start(); o.stop(ctx.currentTime + 0.12);
 }
 
-new Html5QrcodeScanner('reader', {
-  fps: 10,
-  qrbox: { width: 250, height: 250 },
-  rememberLastUsedCamera: true,
-  showTorchButtonIfSupported: true
-}).render(submitCode);
+
 </script>
 </body>
 </html>
