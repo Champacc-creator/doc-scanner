@@ -41,15 +41,27 @@ async function saveData() {
 
   if (p.action === 'receive') {
     // 1. ใช้ TextFinder ค้นหาแทนการดึงข้อมูลทั้งชีต (เร็วขึ้นมาก)
-    const textFinder = recordSheet.getRange("B:B").createTextFinder(p.docCode).matchEntireCell(true);
-    const result = textFinder.findNext();
+  const range = recordSheet.getRange("B:B");
 
-    // 2. ถ้าเจอ (result ไม่ใช่ null) แสดงว่าซ้ำ
-    if (result !== null) {
-      return ContentService.createTextOutput(JSON.stringify({ok: false, msg: 'รหัสนี้ถูกบันทึกไปแล้ว!'})).setMimeType(ContentService.MimeType.JSON);
+  const values = range.getValues();
+
+  
+
+  // ใช้ loop แบบปกติซึ่งมักจะเร็วกว่า TextFinder ในบางกรณี
+
+  for (let i = 0; i < values.length; i++) {
+
+    if (values[i][0] == p.docCode) {
+
+      return ContentService.createTextOutput(JSON.stringify({ok: false, msg: 'ซ้ำ'})).setMimeType(ContentService.MimeType.JSON);
+
     }
-    
-    // 3. ถ้าไม่ซ้ำ ให้บันทึก
-    recordSheet.appendRow([new Date(), p.docCode, p.receivedBy]);
-    return ContentService.createTextOutput(JSON.stringify({ok: true, msg: 'บันทึกสำเร็จ'})).setMimeType(ContentService.MimeType.JSON);
+
   }
+
+
+  recordSheet.appendRow([new Date(), p.docCode, p.receivedBy]);
+
+  return ContentService.createTextOutput(JSON.stringify({ok: true, msg: 'บันทึกสำเร็จ'})).setMimeType(ContentService.MimeType.JSON);
+
+}
