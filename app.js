@@ -37,31 +37,60 @@ async function saveData() {
 
     const receivedBy = document.getElementById('receivedBy').value;
 
-    
+    const btn = document.getElementById('saveBtn'); // ดึงตัวปุ่มมา
 
-  if (p.action === 'receive') {
-    // 1. ใช้ TextFinder ค้นหาแทนการดึงข้อมูลทั้งชีต (เร็วขึ้นมาก)
-  const range = recordSheet.getRange("B:B");
 
-  const values = range.getValues();
+    if (!docCode || !receivedBy) {
 
-  
+        alert("กรุณากรอกข้อมูลให้ครบครับ");
 
-  // ใช้ loop แบบปกติซึ่งมักจะเร็วกว่า TextFinder ในบางกรณี
-
-  for (let i = 0; i < values.length; i++) {
-
-    if (values[i][0] == p.docCode) {
-
-      return ContentService.createTextOutput(JSON.stringify({ok: false, msg: 'ซ้ำ'})).setMimeType(ContentService.MimeType.JSON);
+        return;
 
     }
 
-  }
+
+    // --- ส่วนที่เพิ่มเข้ามา: แสดงสถานะกำลังบันทึก ---
+
+    btn.disabled = true; // ปิดปุ่มไม่ให้กดซ้ำ
+
+    btn.innerText = "กำลังบันทึก..."; // เปลี่ยนข้อความ
+
+    // ------------------------------------------
 
 
-  recordSheet.appendRow([new Date(), p.docCode, p.receivedBy]);
+    try {
 
-  return ContentService.createTextOutput(JSON.stringify({ok: true, msg: 'บันทึกสำเร็จ'})).setMimeType(ContentService.MimeType.JSON);
+        const res = await callAPI('receive', { docCode, receivedBy });
+
+
+        if (res.ok) {
+
+            alert("บันทึกสำเร็จ!");
+
+            document.getElementById('docCode').value = ''; // ล้างค่า
+
+            document.getElementById('receivedBy').value = '';
+
+        } else {
+
+            alert("เกิดข้อผิดพลาด: " + res.msg);
+
+        }
+
+    } catch (err) {
+
+        alert("เชื่อมต่อเซิร์ฟเวอร์ไม่ได้");
+
+    } finally {
+
+        // --- ส่วนที่เพิ่มเข้ามา: คืนค่าปุ่มให้กลับมาเหมือนเดิม ---
+
+        btn.disabled = false; 
+
+        btn.innerText = "บันทึกข้อมูล"; 
+
+        // ------------------------------------------------
+
+    }
 
 }
