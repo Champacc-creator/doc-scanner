@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>รายงานการรับเอกสาร</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'Sarabun', sans-serif; padding: 16px; background: #f5f6f8; }
+  table { width: 100%; border-collapse: collapse; background: #fff; font-size: 14px; }
+  th, td { border: 1px solid #e0e0e0; padding: 8px; text-align: left; }
+  th { background: #1a73e8; color: #fff; }
+  tr:nth-child(even) { background: #fafafa; }
+  .stats { display: flex; gap: 10px; margin-bottom: 14px; }
+  .box { flex: 1; background: #fff; padding: 14px; border-radius: 10px; text-align: center; }
+  .box b { display: block; font-size: 26px; }
+</style>
+</head>
+<body>
+  <h2>📊 รายงานการรับเอกสาร</h2>
+  <div class="stats" id="stats"></div>
+  <table>
+    <thead><tr><th>เวลา</th><th>รหัส</th><th>เรื่อง</th><th>ผู้รับ</th><th>หน่วยงาน</th></tr></thead>
+    <tbody id="tb"><tr><td colspan="5">กำลังโหลด...</td></tr></tbody>
+  </table>
+
+<script src="app.js"></script>
+<script>
+(async () => {
+  const s = await callAPI('summary');
+  if (s.ok) stats.innerHTML =
+    `<div class="box"><b>${s.data.total}</b>ทั้งหมด</div>
+     <div class="box" style="color:#34a853"><b>${s.data.received}</b>รับแล้ว</div>
+     <div class="box" style="color:#ea4335"><b>${s.data.pending}</b>ค้างรับ</div>`;
+
+  const r = await callAPI('recent');
+  tb.innerHTML = (r.ok && r.data.length)
+    ? r.data.map(x => `<tr><td>${x.at}</td><td>${x.code}</td><td>${x.title}</td>
+                       <td>${x.by}</td><td>${x.dept || '-'}</td></tr>`).join('')
+    : '<tr><td colspan="5">ยังไม่มีข้อมูล</td></tr>';
+})();
+</script>
+</body>
+</html>

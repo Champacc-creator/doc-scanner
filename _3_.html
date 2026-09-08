@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>สแกนรับเอกสาร</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: 'Sarabun', sans-serif; max-width: 480px; margin: 0 auto;
+         padding: 16px; background: #f5f6f8; }
+  .card { background: #fff; border-radius: 12px; padding: 14px; margin-bottom: 12px;
+          box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+  input, button { width: 100%; padding: 11px; margin: 5px 0; font-size: 16px;
+                  border: 1px solid #ccd; border-radius: 8px; font-family: inherit; }
+  button { background: #1a73e8; color: #fff; border: 0; font-weight: 600; }
+  #reader { border-radius: 12px; overflow: hidden; }
+  .ok  { background: #e6f4ea; border-left: 5px solid #34a853; padding: 12px; border-radius: 8px; }
+  .err { background: #fce8e6; border-left: 5px solid #ea4335; padding: 12px; border-radius: 8px; }
+  .muted { color: #666; font-size: 13px; }
+  a { color: #1a73e8; }
+</style>
+</head>
+<body>
+  <h2>📄 บันทึกรับเอกสาร</h2>
+
+  <div class="card">
+    <input id="receiver" placeholder="ชื่อผู้รับ *">
+    <input id="dept" placeholder="หน่วยงาน">
+    <div class="muted">ระบบจำชื่อไว้ให้อัตโนมัติ</div>
+  </div>
+
+  <div class="card">
+    <div id="reader"></div>
+    <input id="manual" placeholder="หรือพิมพ์รหัสเอกสารเอง">
+    <button onclick="submitCode(manual.value)">บันทึกด้วยรหัสที่พิมพ์</button>
+  </div>
+
+  <div id="result"></div>
+  <p><a href="report.html">📊 ดูรายงาน</a></p>
+
+<script src="app.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+let lastCode = '', lastTime = 0, busy = false;
+
+$('receiver').value = localStorage.getItem('receiver') || '';
+$('dept').value = localStorage.getItem('dept') || '';
+$('receiver').onchange = e => localStorage.setItem('receiver', e.target.value);
+$('dept').onchange = e => localStorage.setItem('dept', e.target.value);
+
+async function submitCode(code) {
+  code = (code || '').trim();
+  if (!code || busy) return;
+
+  const now = Date.now();
+  if (code === lastCode && now - lastTime < 4000) return;
+  lastCode = code; lastTime = now;
+
+  const by = $('receiver').value.trim();
+  if (!by) return show('err', 'กรุณากรอกชื่อผู้รับก่อน');
+
+  busy = true;
+  show('', '⏳ กำลังบันทึก...');
+
+  try {
+    const r = await callAPI('receive', {
+      docCode: code, receivedBy: by, department: $('dept').value.trim()
+    });
+    if (r.ok) {
+      show('ok', `✅ รับเอกสารแล้ว<br><b>${r.code}</b><br>${r.title}
+                  <br><span class="muted">จาก ${r.sender || '-'} • ${r.at}</span>`);
+      beep(); navigator.vibrate?.(200);
+    } else {
+      show('err', '❌ ' + r.msg);
+      navigator.vibrate?.([100, 60, 100]);
+    }
+  } catch (e) {
+    show('err', '❌ เชื่อมต่อไม่ได้: ' + e.message);
+  }
+  busy = false;
+}
+
+function show(cls, html) {
+  $('result').innerHTML = `<div class="${cls || 'card'}">${html}</div>`;
+}
+
+function beep() {
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const o = ctx.createOscillator();
+  o.frequency.value = 880; o.connect(ctx.destination);
+  o.start(); o.stop(ctx.currentTime + 0.12);
+}
+
+new Html5QrcodeScanner('reader', {
+  fps: 10,
+  qrbox: { width: 250, height: 250 },
+  rememberLastUsedCamera: true,
+  showTorchButtonIfSupported: true
+}).render(submitCode);
+</script>
+</body>
+</html>
